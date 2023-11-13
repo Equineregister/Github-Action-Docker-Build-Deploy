@@ -60,7 +60,7 @@ jobs:
 
       - name: Set docker push
         run: |
-          echo "DOCKER_PUSH=--push" >>$GITHUB_ENV
+          echo "DOCKER_PUSH=--push" >> $GITHUB_ENV
         shell: bash
         if: ${{ github.event_name != 'pull_request' }}
 
