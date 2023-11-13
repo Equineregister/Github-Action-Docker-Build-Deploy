@@ -38,33 +38,25 @@ jobs:
 
       - name: Get current timestamp
         id: timestamp
-        run: echo "::set-output name=now::$(date +'%s')"
+        run: echo "TIMESTAMP=$(date +'%s')" >> $GITHUB_ENV # Replaced set-output
 
       - name: Version
         id: version
-        run: echo "VERSION=${GITHUB_REF##*/}-${GITHUB_SHA}" >>$GITHUB_ENV
+        run: echo "VERSION=${GITHUB_REF##*/}-${GITHUB_SHA}" >> $GITHUB_ENV
 
-      - name: Docker tags - other than tag ref
-        id: docker_meta
+      - name: Docker tags
+        id: docker_tags
         env:
           DOCKER_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           DOCKER_REPOSITORY="${DOCKER_REGISTRY}/${GITHUB_REPOSITORY,,}"
-          TAGS="-t ${DOCKER_REPOSITORY}:${VERSION} -t ${DOCKER_REPOSITORY}:${GITHUB_REF##*/}-${{ steps.timestamp.outputs.now }}-${GITHUB_SHA}"
-          echo "DOCKER_TAGS=${TAGS}" >>$GITHUB_ENV
+          if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
+            TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}-${TIMESTAMP}-${GITHUB_SHA}"
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}"
+          fi
+          echo "DOCKER_TAGS=${TAGS}" >> $GITHUB_ENV
         shell: bash
-        if: ${{ ! contains(github.ref, '/tags/') }}
-
-      - name: Docker tags - tag ref
-        id: tagged_build
-        env:
-          DOCKER_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          DOCKER_REPOSITORY="${DOCKER_REGISTRY}/${GITHUB_REPOSITORY,,}"
-          TAGS="-t ${DOCKER_REPOSITORY}:${VERSION} -t ${DOCKER_REPOSITORY}:${GITHUB_REF##*/}-${{ steps.timestamp.outputs.now }}-${GITHUB_SHA} -t ${DOCKER_REPOSITORY}:${GITHUB_REF##*/}"
-          echo "DOCKER_TAGS=${TAGS}" >>$GITHUB_ENV
-        shell: bash
-        if: ${{ contains(github.ref, '/tags/') }}
 
       - name: Set docker push
         run: |
@@ -72,11 +64,20 @@ jobs:
         shell: bash
         if: ${{ github.event_name != 'pull_request' }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2.7.0
+      - name: Set up Docker
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: linux/amd64
 
       - name: Build (and push)
-        run: |
-          docker buildx build --ssh=default=${SSH_AUTH_SOCK} \
-            ${DOCKER_TAGS} ${DOCKER_PUSH} \
-            --build-arg GITHUB_TOKEN --build-arg VERSION .
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.DOCKER_TAGS }}
+          build-args: |
+            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+            VERSION=${{ env.VERSION }}
+          ssh: default=${{ env.SSH_AUTH_SOCK }}
+        if: env.DOCKER_TAGS != ''
