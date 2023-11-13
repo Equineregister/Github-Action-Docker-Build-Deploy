@@ -22,8 +22,8 @@ jobs:
       - uses: webfactory/ssh-agent@v0.8.0 
         with:
           ssh-private-key: |
-            ${{ secrets.BITBUCKET_SSH_PRIVATE_KEY }}
-            ${{ secrets.SSH_PRIVATE_KEY }}
+            ${{ secrets.bitbucketSSHKey }}
+            ${{ secrets.sshKey }}
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.6.0 
         with:
