@@ -24,6 +24,7 @@ jobs:
           ssh-private-key: |
             ${{ secrets.bitbucketSSHKey }}
             ${{ secrets.sshKey }}
+            
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.6.0 
         with:
