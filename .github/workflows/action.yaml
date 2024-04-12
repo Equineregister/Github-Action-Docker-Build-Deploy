@@ -50,10 +50,10 @@ jobs:
           DOCKER_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           DOCKER_REPOSITORY="${DOCKER_REGISTRY}/${GITHUB_REPOSITORY,,}"
-          if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
-            TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}-${TIMESTAMP}-${GITHUB_SHA}"
-          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}"
+          elif [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
+            TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}-${TIMESTAMP}-${GITHUB_SHA}"
           fi
           echo "DOCKER_TAGS=${TAGS}" >> $GITHUB_ENV
         shell: bash
