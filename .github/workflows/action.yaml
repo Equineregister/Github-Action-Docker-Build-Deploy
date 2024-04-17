@@ -5,7 +5,9 @@ on:
     secrets:
       bitbucketSSHKey:
         required: true
-      sshKey:
+      githubSSHKey:
+        required: true
+      githubToken:
         required: true
       awsRegion:
         required: true
@@ -36,14 +38,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Get current timestamp
-        id: timestamp
-        run: echo "now=$(date +'%s')" >> $GITHUB_OUTPUT
-
-      - name: Version
-        id: version
-        run: echo "version=${GITHUB_REF##*/}-${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
-
       - name: Docker tags
         id: docker_tags
         env:
@@ -51,7 +45,7 @@ jobs:
         run: |
           DOCKER_REPOSITORY="${DOCKER_REGISTRY}/${GITHUB_REPOSITORY,,}"
           if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
-            TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}-${{ steps.timestamp.outputs.now }}-${GITHUB_SHA:0:8}"
+            TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}-$(date +'%s')-${GITHUB_SHA:0:8}"
           elif [[ "${GITHUB_REF}" == "refs/tags/*" ]]; then
             TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}"
           fi
@@ -75,6 +69,6 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.DOCKER_TAGS }}
           build-args: |
-            GITHUB_TOKEN=${{ secrets.READ_PACKAGES_TOKEN }}
-            VERSION=${{ env.VERSION }}
+            GITHUB_TOKEN=${{ secrets.githubToken }}
+            VERSION=${GITHUB_REF##*/}-${GITHUB_SHA:0:8}
           ssh: default=${{ env.SSH_AUTH_SOCK }}
