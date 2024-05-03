@@ -66,7 +66,7 @@ jobs:
           context: .
           platforms: linux/amd64
           provenance: false
-          push: ${{ ("${GITHUB_REF}" == "refs/heads/develop" || "${GITHUB_REF}" == "refs/heads/main" || "${GITHUB_REF}" == "refs/tags/*") && github.event_name != 'pull_request' }}
+          push: ${{ (github.ref == "refs/heads/develop" || github.ref == "refs/heads/main" || github.ref == "refs/tags/*") && github.event_name != 'pull_request' }}
           tags: ${{ env.DOCKER_TAGS }}
           build-args: |
             GITHUB_TOKEN=${{ secrets.githubToken }}
