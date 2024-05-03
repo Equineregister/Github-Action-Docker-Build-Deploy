@@ -44,7 +44,7 @@ jobs:
           DOCKER_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           DOCKER_REPOSITORY="${DOCKER_REGISTRY}/${GITHUB_REPOSITORY,,}"
-          if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
+          if [[ "${GITHUB_REF}" == "refs/heads/develop" || "${GITHUB_REF}" == "refs/heads/main" ]]; then
             TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}-$(date +'%s')-${GITHUB_SHA:0:8}"
           elif [[ "${GITHUB_REF}" == "refs/tags/*" ]]; then
             TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}"
@@ -66,7 +66,7 @@ jobs:
           context: .
           platforms: linux/amd64
           provenance: false
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ ("${GITHUB_REF}" == "refs/heads/develop" || "${GITHUB_REF}" == "refs/heads/main" || "${GITHUB_REF}" == "refs/tags/*") && github.event_name != 'pull_request' }}
           tags: ${{ env.DOCKER_TAGS }}
           build-args: |
             GITHUB_TOKEN=${{ secrets.githubToken }}
