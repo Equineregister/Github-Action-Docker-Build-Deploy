@@ -46,7 +46,7 @@ jobs:
           DOCKER_REPOSITORY="${DOCKER_REGISTRY}/${GITHUB_REPOSITORY,,}"
           if [[ "${GITHUB_REF}" == "refs/heads/develop" || "${GITHUB_REF}" == "refs/heads/main" ]]; then
             TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}-$(date +'%s')-${GITHUB_SHA:0:8}"
-          elif [[ "${GITHUB_REF}" == "refs/tags/*" ]]; then
+          elif [[ "${GITHUB_REF}" == *refs/tags/* ]]; then
             TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}"
           fi
           echo "DOCKER_TAGS=${TAGS}" >> $GITHUB_ENV
@@ -66,7 +66,7 @@ jobs:
           context: .
           platforms: linux/amd64
           provenance: false
-          push: ${{ (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/tags/*') && github.event_name != 'pull_request' }}
+          push: ${{ (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/')) && github.event_name != 'pull_request' }}
           tags: ${{ env.DOCKER_TAGS }}
           build-args: |
             GITHUB_TOKEN=${{ secrets.githubToken }}
