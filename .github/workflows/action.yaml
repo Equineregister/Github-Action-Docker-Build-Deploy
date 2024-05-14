@@ -43,6 +43,7 @@ jobs:
         env:
           DOCKER_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
+          echo "GITHUB_REF=${GITHUB_REF}"
           DOCKER_REPOSITORY="${DOCKER_REGISTRY}/${GITHUB_REPOSITORY,,}"
           if [[ "${GITHUB_REF}" == "refs/heads/develop" || "${GITHUB_REF}" == "refs/heads/main" ]]; then
             TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}-$(date +'%s')-${GITHUB_SHA:0:8}"
