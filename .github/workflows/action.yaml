@@ -46,7 +46,7 @@ jobs:
           echo "GITHUB_REF=${GITHUB_REF}"
           DOCKER_REPOSITORY="${DOCKER_REGISTRY}/${GITHUB_REPOSITORY,,}"
           if [[ "${GITHUB_REF}" == "refs/heads/develop" || "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}-$(date +'%s')-${GITHUB_SHA:0:8}"
+            TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}-${TIMESTAMP}-${GITHUB_SHA}"
           elif [[ "${GITHUB_REF}" == *refs/tags/* ]]; then
             TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}"
           fi
@@ -71,5 +71,5 @@ jobs:
           tags: ${{ env.DOCKER_TAGS }}
           build-args: |
             GITHUB_TOKEN=${{ secrets.githubToken }}
-            VERSION=${GITHUB_REF##*/}-${GITHUB_SHA:0:8}
+            VERSION=${{ env.VERSION }}
           ssh: default=${{ env.SSH_AUTH_SOCK }}
