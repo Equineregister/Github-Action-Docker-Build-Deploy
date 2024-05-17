@@ -38,6 +38,14 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Get current timestamp
+        id: timestamp
+        run: echo "TIMESTAMP=$(date +'%s')" >> $GITHUB_ENV
+
+      - name: Version
+        id: version
+        run: echo "VERSION=${GITHUB_REF##*/}-${GITHUB_SHA}" >> $GITHUB_ENV
+
       - name: Docker tags
         id: docker_tags
         env:
