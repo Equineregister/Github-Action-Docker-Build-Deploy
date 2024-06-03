@@ -44,7 +44,7 @@ jobs:
 
       - name: Version
         id: version
-        run: echo "VERSION=${GITHUB_REF##*/}-${GITHUB_SHA}" >> $GITHUB_ENV
+        run: echo "VERSION=${GITHUB_REF##*/}-${GITHUB_SHA:0:8}" >> $GITHUB_ENV
 
       - name: Docker tags
         id: docker_tags
@@ -54,7 +54,7 @@ jobs:
           echo "GITHUB_REF=${GITHUB_REF}"
           DOCKER_REPOSITORY="${DOCKER_REGISTRY}/${GITHUB_REPOSITORY,,}"
           if [[ "${GITHUB_REF}" == "refs/heads/develop" || "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}-$(date +'%s')-${GITHUB_SHA:0:8}"
+            TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}-${TIMESTAMP}-${GITHUB_SHA:0:8}"
           elif [[ "${GITHUB_REF}" == *refs/tags/* ]]; then
             TAGS="${DOCKER_REPOSITORY}:${GITHUB_REF##*/}"
           fi
